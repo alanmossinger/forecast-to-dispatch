@@ -59,5 +59,6 @@ Six controls, all of them software you can run and test rather than policies in 
 
 All six funnel into a single command with a pass/fail exit code. The automated build runs it on every change: **if any control fails, the software cannot be merged or released.** That is the difference between "we have governance" and "governance is enforced."
 
-### 7. Serving — *(Phase 7, pending)*
-The API an operator would call, with the audit log and approval gate wired into every request.
+### 7. Serving — the operator's interface
+
+A small web service exposes the system the way an operator or a bidding platform would consume it: ask for tomorrow's price forecast, ask for a dispatch plan, approve it, deploy it. Three governance properties live in the service itself rather than in caller discipline: **every request is written to the audit trail** (including who called, what, when, and a fingerprint of the payload); **asking to deploy an unapproved schedule is refused** with an error, not a warning; and **the model served is looked up in the registry on every request**, so a rollback takes effect on the very next call — no redeploy, no restart. The whole flow was exercised live: plan → refused deployment (403) → named approval → accepted deployment, all of it leaving verifiable records in the chained log.
