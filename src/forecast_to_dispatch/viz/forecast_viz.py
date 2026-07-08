@@ -113,13 +113,13 @@ def fig05_scarcity_zoom(
     yy, pp = y.loc[lo:hi], preds.loc[lo:hi]
 
     anticipated = pp.loc[spike_hour, "q95"] >= threshold
-    fig, ax = plt.subplots(figsize=(12.5, 5.5))
+    fig, ax = plt.subplots(figsize=(12.5, 6.4))
     ax.fill_between(
         pp.index, pp["q05"], pp["q95"], color=PALETTE["orange"], alpha=0.30, label="P5–P95 band"
     )
-    ax.plot(pp.index, pp["q95"], color=PALETTE["orange"], lw=1.6, label="P95 forecast")
+    ax.plot(pp.index, pp["q95"], color=PALETTE["orange"], lw=1.8, label="P95 forecast")
     ax.plot(pp.index, pp["q50"], color=PALETTE["vermillion"], lw=1.4, label="P50 forecast")
-    ax.plot(yy.index, yy, color=PALETTE["blue"], lw=1.8, label="Realized RT price")
+    ax.plot(yy.index, yy, color=PALETTE["blue"], lw=2.0, label="Realized RT price")
     ax.axhline(
         threshold,
         color=PALETTE["black"],
@@ -127,18 +127,33 @@ def fig05_scarcity_zoom(
         ls="--",
         label=f"scarcity threshold (${threshold:,.0f})",
     )
+    # Shade the delivery day of the spike so the eye lands on the event first.
+    day0 = spike_hour.normalize()
+    ax.axvspan(day0, day0 + pd.Timedelta(days=1), color=PALETTE["vermillion"], alpha=0.06)
     ax.annotate(
         f"spike: ${yy.max():,.0f}/MWh",
         xy=(spike_hour, yy.max()),
-        xytext=(-90, -18),
+        xytext=(-130, -35),
         textcoords="offset points",
-        arrowprops={"arrowstyle": "->", "color": PALETTE["black"]},
+        arrowprops={"arrowstyle": "->", "color": PALETTE["black"], "shrinkB": 4},
+        fontsize=11,
+        fontweight="bold",
+    )
+    p95_at_spike = pp.loc[spike_hour, "q95"]
+    ax.annotate(
+        f"P95 issued the morning before: ${p95_at_spike:,.0f}\n"
+        f"({'above' if anticipated else 'below'} the ${threshold:,.0f} threshold)",
+        xy=(spike_hour, p95_at_spike),
+        xytext=(25, -45),
+        textcoords="offset points",
+        arrowprops={"arrowstyle": "->", "color": PALETTE["orange"], "shrinkB": 3},
         fontsize=10,
     )
     ax.set_yscale("symlog", linthresh=200)
     ax.set_ylabel("RTM price ($/MWh, symlog)")
     ax.xaxis.set_major_formatter(mdates.DateFormatter("%a %H:00"))
-    ax.legend(ncol=3, loc="upper left")
+    # Legend below the axes so it never collides with the spike or the band.
+    ax.legend(ncol=5, loc="upper center", bbox_to_anchor=(0.5, -0.10), frameon=False)
     verdict = (
         "P95 raised its hand before the event"
         if anticipated
@@ -147,8 +162,10 @@ def fig05_scarcity_zoom(
     titled(
         ax,
         f"The event that pays for tail forecasting: {verdict}",
-        f"Largest test-window spike ({spike_hour:%b %d, %H:00}) with the day-ahead quantile band",
+        f"Largest test-window spike ({spike_hour:%b %d, %H:00}) with the day-ahead quantile band; "
+        "spike day shaded",
     )
+    fig.tight_layout()
     if save:
         save_fig(fig, "fig05_scarcity_zoom")
     return fig
