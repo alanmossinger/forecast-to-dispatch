@@ -36,9 +36,42 @@ The top row shows the market physics the model must learn: real-time price rises
 
 One deliberate limitation, recorded in the model card: ERCOT's historical day-ahead *forecast* archives (load/wind/solar) expire and cannot be reconstructed for 2024, so the model uses lagged actuals as persistence proxies — strictly weaker information than a production forecast feed. Reported results are therefore a **conservative floor**.
 
-## 3. Forecast quality — especially the tails *(Phase 3, pending)*
+## 3. Forecast quality — especially the tails
 
-<!-- fig01_forecast_fan, fig02_calibration, fig03_shap_beeswarm, fig04_shap_bar, fig05_scarcity_zoom, fig14_model_comparison, fig20_error_by_regime -->
+*Protocol: chronological split — train Jan 9 → May 3 (2,760 hours), test May 4 → Jun 29 (1,368 hours, strictly the future). Both models conformally calibrated (width-scaled CQR) on the last quarter of the training window; scarcity threshold = training-window P99 ($166/MWh). All numbers from the registered real run (`models/*/metrics.json`).*
+
+| Model | Pinball (mean) | 90% coverage | Scarcity recall (17 hrs) | P50 MAE |
+|---|---|---|---|---|
+| Climatology (no model) | 8.67 | 0.85 | 0.35 | $22.6* |
+| **LightGBM (production)** | **7.55** | **0.86** | **0.35** | **$18.6** |
+| LSTM (challenger) | 10.26 | 0.76 | 0.00 | — |
+
+![Forecast fan](figures/fig01_forecast_fan.png)
+
+The quantile band *breathes*: tight through calm overnight hours, stretching by an order of magnitude into stressed evenings — including the May 8 event where realized prices hit $3,049/MWh. Band width is directly actionable for an operator: a wide P95 tomorrow evening is the signal to hold state-of-charge instead of selling reserves early. **Business consequence:** a point forecast carries none of this information; the fan is what makes risk-aware dispatch possible.
+
+![Calibration](figures/fig02_calibration.png)
+
+The honesty certificate: the stated 90% interval covered **86%** of test hours (within the ±8pp tolerance), the 50% interval 55%. This required conformal calibration — the raw model's "90%" interval covered only 68%, a confident lie that would systematically under-position the battery for tails. **Business consequence:** every risk decision downstream inherits this honesty; its drift is monitored in production (fig11).
+
+![SHAP beeswarm](figures/fig03_shap_beeswarm.png)
+![SHAP bar](figures/fig04_shap_bar.png)
+
+What the model relies on reads like a market desk's checklist: recent real-time price levels and volatility (regime/momentum), the prior-day DAM price (the market's own expectation), and net load / renewables (the physics of scarcity). Nothing in the top ranks is a mystery feature — an operator can challenge any forecast in market terms and get a coherent answer. **Business consequence:** this is what makes the human-in-the-loop gate a real review rather than a rubber stamp, and it is the transparency artifact an EU-AI-Act-style audit asks for.
+
+![Scarcity zoom](figures/fig05_scarcity_zoom.png)
+
+The single event that pays for tail forecasting: ahead of the largest test-window spike (May 8, 20:00, $3,049/MWh), the P95 issued the morning before **rose above the scarcity threshold** — the difference between a battery that entered that evening fully charged and one that sold out at noon. **Business consequence:** catching events of this class is the entire return on the probabilistic-forecasting investment.
+
+![Model comparison](figures/fig14_model_comparison.png)
+
+Does deep learning earn its complexity? A clean **no** on this dataset: the LSTM loses on pinball (10.26 vs 7.55), under-covers even after identical conformal treatment (76%), and its P95 flagged zero scarcity hours. With ~115 training days the sequence model lacks the data volume its parameters want. **Business consequence:** the governed choice is the simpler, faster, explainable model — chosen on evidence, not fashion. The LSTM remains registered as a challenger.
+
+![Error by regime](figures/fig20_error_by_regime.png)
+
+P50 errors concentrate in the evening ramp and explode in scarcity hours — exactly where the money is. **Business consequence:** this residual, honestly measured, is what the backtest prices as the gap between governed revenue and the perfect-foresight ceiling; a storage backtest claiming near-zero scarcity-hour error is leaking the future.
+
+\* *Climatology P50 MAE computed for context; its pinball already includes it.*
 
 ## 4. From forecast to dispatch *(Phase 4, pending)*
 

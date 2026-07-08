@@ -1,0 +1,1 @@
+{"type": "ConformalizedForecaster", "base_type": "QuantileLGBM", "calib_fraction": 0.25, "offsets": {"q05_q95": 0.302904079114165, "q25_q75": 0.4052170821766082}}

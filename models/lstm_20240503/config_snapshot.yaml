@@ -1,0 +1,50 @@
+ancillary_services:
+- REGUP
+- REGDN
+- RRS
+- NSPIN
+- ECRS
+battery:
+  degradation_cost_per_mwh: 2.0
+  energy_mwh: 200
+  eta_charge: 0.959
+  eta_discharge: 0.959
+  power_mw: 100
+  soc_initial_mwh: 100.0
+  soc_max_mwh: 200.0
+  soc_min_mwh: 0.0
+dates:
+  end: '2024-06-30'
+  sample_end: '2024-05-31'
+  sample_start: '2024-05-01'
+  start: '2024-01-01'
+forecast:
+  coverage_tolerance: 0.08
+  horizon_hours: 24
+  quantiles:
+  - 0.05
+  - 0.25
+  - 0.5
+  - 0.75
+  - 0.95
+  random_seed: 42
+  scarcity_percentile: 0.99
+  target: rtm_price
+governance:
+  drift:
+    ks_pvalue_threshold: 0.01
+    psi_threshold: 0.2
+  model_registry: models
+market:
+  comparison_hub: TH_SP15_GEN-APND
+  comparison_iso: caiso
+  hub: HB_HOUSTON
+  iso: ercot
+  timezone: US/Central
+paths:
+  audit_log: governance/audit_log.jsonl
+  figures: reports/figures
+  models: models
+  processed: data/processed
+  raw: data/raw
+  sample: data/sample

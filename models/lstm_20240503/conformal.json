@@ -1,0 +1,1 @@
+{"type": "ConformalizedForecaster", "base_type": "LSTMForecaster", "calib_fraction": 0.25, "offsets": {"q05_q95": 0.013315193394864984, "q25_q75": 0.23688477332496932}}

@@ -1,0 +1,9 @@
+{
+  "current": "lgbm_20240503",
+  "previous": null,
+  "challenger": "lstm_20240503",
+  "models": {
+    "lgbm": "lgbm_20240503",
+    "lstm": "lstm_20240503"
+  }
+}

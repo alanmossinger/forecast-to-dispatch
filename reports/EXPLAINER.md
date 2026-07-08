@@ -26,8 +26,13 @@ The forecast for tomorrow is issued at **9 a.m. today**, before ERCOT's day-ahea
 
 How do we know nothing from the future leaks in? We *prove* it: take one delivery day, delete from the dataset everything that was still unknown at its 9 a.m. issue moment, rebuild the model's inputs from the censored data — and check they come out identical. They do, for every feature, and this experiment runs automatically in the release gates. Why it matters: future leakage is how storage backtests quietly overstate revenue by 20% or more; this system makes that failure impossible rather than merely unlikely.
 
-### 3. Forecast — *(Phase 3, pending)*
-Why we forecast five quantiles instead of one number, and how we measure honesty about uncertainty.
+### 3. Forecast — five quantiles, not one number
+
+Instead of predicting "tomorrow at 8 p.m. power will cost \$45", the model predicts a *range*: "there's a 5% chance it's below \$20, a 50% chance below \$45, a 5% chance above \$400". That top number — the P95 — is the money number: when it jumps, the system knows a scarcity evening may be coming and holds the battery's charge.
+
+Two honesty mechanisms guard the forecast. First, the stated ranges are *calibrated*: when the model says "90% confident," reality lands inside 86% of the time (measured on months the model never saw — and repaired with a statistical technique called conformal calibration after the raw model proved overconfident). Second, every forecast is *explainable*: a standard technique (SHAP) decomposes each prediction into named drivers — recent prices, the market's own day-ahead expectation, electricity demand net of wind and solar — so a human reviewer can interrogate any forecast in plain market terms.
+
+We also trained a fashionable deep-learning model (an LSTM) behind the same interface and scored it identically. It lost on every metric, so the simpler, explainable model ships — a decision made on evidence, and documented, which is itself part of the governance story.
 
 ### 4. Dispatch — *(Phase 4, pending)*
 How the optimizer turns a price forecast into an hourly charge/discharge/reserve schedule without ever breaking the battery's physics.
