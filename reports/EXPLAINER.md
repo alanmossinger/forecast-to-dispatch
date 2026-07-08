@@ -10,8 +10,15 @@ A grid-scale battery makes money by buying power when it is cheap and selling it
 
 ## Stage by stage
 
-### 1. Data — *(Phase 1, pending)*
-Where the prices come from and why we align day-ahead, real-time, and ancillary-service prices on one hourly clock.
+### 1. Data — where the prices come from
+
+Three public ERCOT price streams are pulled from the ISO's historical archives (via the open-source `gridstatus` library) and aligned on one hourly clock at the Houston trading hub:
+
+- **Day-ahead prices** — what power for each hour of tomorrow sold for in yesterday's auction.
+- **Real-time prices** — what power actually cost in each 15-minute interval (averaged to hourly). This is where scarcity spikes appear: the same megawatt-hour that averages \$27 can cost \$3,000 for an hour on a stressed evening.
+- **Ancillary-service clearing prices** — what the grid pays a resource just to *stand ready* (Regulation Up/Down, Responsive Reserve, Non-Spin, ECRS). A battery can earn these while holding its charge.
+
+Two honesty rules are enforced in code: the assembled dataset **fails loudly if any hour is missing** (a silent gap would corrupt every revenue number downstream), and a small **offline sample ships with the repository** so anyone — including the automated CI gates — can rerun the entire pipeline with no network access and get the same numbers.
 
 ### 2. Features — *(Phase 2, pending)*
 What the model is allowed to know at forecast time, and how we prove nothing from the future leaks in.
