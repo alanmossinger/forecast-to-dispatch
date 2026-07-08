@@ -20,6 +20,7 @@ from forecast_to_dispatch.data import ingest
 from forecast_to_dispatch.features import build as features_build
 from forecast_to_dispatch.backtest import engine as backtest_engine
 from forecast_to_dispatch.forecast import train as forecast_train
+from forecast_to_dispatch.governance import stage as governance_stage
 from forecast_to_dispatch.optimize import dispatch as optimize_dispatch_stage
 
 # Stages register here phase by phase: name -> callable(config, args)
@@ -29,6 +30,7 @@ STAGES: dict[str, object] = {
     "forecast": forecast_train.run,
     "dispatch": optimize_dispatch_stage.run,
     "backtest": backtest_engine.run,
+    "governance": governance_stage.run,
 }
 
 PLANNED_STAGES = ["ingest", "features", "forecast", "dispatch", "backtest", "governance"]

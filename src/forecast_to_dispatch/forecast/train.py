@@ -119,15 +119,19 @@ def train_forecaster(
         model_id = f"{name}_{pd.Timestamp(results['train_window'][1]).strftime('%Y%m%d')}"
         model_dir = models_root / model_id
         model.save(model_dir)
-        (model_dir / "metrics.json").write_text(
-            json.dumps({**results, "this_model": name}, indent=2)
-        )
         (model_dir / "config_snapshot.yaml").write_text(yaml.safe_dump(config))
         registry_models[name] = model_id
         print(
             f"[forecast] {name}: pinball={metrics['pinball_mean']:.3f} "
             f"coverage90={metrics['coverage_90']:.2f} "
             f"scarcity_recall={metrics['scarcity_recall']:.2f} -> {model_dir}"
+        )
+
+    # metrics.json is written AFTER the loop so every model dir carries the
+    # COMPLETE comparison (the model card renders challenger columns from it).
+    for name, model_id in registry_models.items():
+        (models_root / model_id / "metrics.json").write_text(
+            json.dumps({**results, "this_model": name}, indent=2)
         )
 
     # LGBM is the production model (registry 'current'); the LSTM is the

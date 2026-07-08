@@ -119,6 +119,22 @@ The same megawatts earn twice: reserves carry the calm days as steady income; en
 
 Both months show the same structure — governed near the ceiling, far above the floor — so the 86% is not one lucky afternoon. **Business consequence:** consistency across regimes separates a strategy from a story; whether the pattern persists is exactly what the Phase 6 drift monitor watches.
 
-## 6. Proof it is governed *(Phase 6, pending)*
+## 6. Proof it is governed
 
-<!-- fig11_drift_monitor, fig12_gate_status, fig13_architecture, fig24_audit_trail_flow -->
+*Every control below is running code in this repository — exercised live in notebook 06, covered by 14 dedicated tests, and enforced by one command: `python -m forecast_to_dispatch.governance.check` (nine gates, non-zero exit on any failure — the CI required check).*
+
+![Drift monitor](figures/fig11_drift_monitor.png)
+
+The drift monitor **fired for real during this build**: weekly PSI of net load and price features climbed past the 0.2 action threshold in June (peaking near 4.8) as the ERCOT summer regime arrived — precisely the regime-shift risk (R2) the register describes. The governed response is on display rather than hidden: gate G6 fails on *unacknowledged* drift and passes only because a named owner recorded a reasoned, expiring acknowledgment (`governance/drift_acknowledgment.yaml`) — the study model is deliberately frozen, and its honesty on the drifted window is independently verified (86% coverage, 86.1% capture *on that window*). **Business consequence:** detect → human decision → documented acceptance is the loop that stops silent skill decay from becoming silent losses.
+
+![Gate status](figures/fig12_gate_status.png)
+
+Nine release gates — model card completeness, risk-register validity, coverage honesty, tail reporting, leakage-spec integrity, drift, audit-chain verification, backtest plausibility (a near-100% capture would *fail* as suspected leakage), and registry consistency. **Business consequence:** an ungoverned model literally cannot ship; the gate is a command with an exit code, not a policy document.
+
+![Architecture](figures/fig13_architecture.png)
+
+The one-page answer to "how is an autonomous real-money agent kept on a leash": the decision pipeline runs along the top; the governance rail runs underneath with explicit hooks — drift watches the features and forecasts, the audit log records every decision, human approval stands between the optimizer and deployment, rollback re-points the registry — and everything funnels into the single CI-enforced gate. **Business consequence:** oversight is architecture, not an afterthought.
+
+![Audit trail](figures/fig24_audit_trail_flow.png)
+
+A real excerpt of the append-only audit log: forecast issued (model version + input hash) → schedule created (content hash + expected profit) → human approval (named approver, bound to that exact hash) → settlement. Each record chains the SHA-256 of its predecessor; notebook 06 demonstrates that rewriting *one* historical value breaks verification at exactly that record. **Business consequence:** "what did the system decide, when, from what inputs, approved by whom?" is answerable years later — the record-keeping an operator, an ISO, or an EU-AI-Act auditor actually requires.

@@ -1,0 +1,144 @@
+# Risk register — source of truth (rendered to risk_register.md by
+# forecast_to_dispatch.governance.risk_register). Every risk carries an owner,
+# a likelihood/impact rating, and a mitigation that exists IN THIS REPO (or is
+# explicitly marked as an operational control for production).
+#
+# Ratings: likelihood/impact in {low, medium, high}.
+
+- id: R1
+  title: Forecast miss during a scarcity event
+  description: >
+    The P95 fails to flag a spike evening; the battery enters the window
+    under-charged or committed to reserves, missing the highest-value hours.
+  likelihood: medium
+  impact: high
+  mitigation: >
+    Scarcity recall tracked as a first-class metric (fig05, fig14); conformal
+    calibration keeps intervals honest; fig10 quantifies the realized cost;
+    drift monitor (R2) watches for regime change that degrades tail vision.
+  owner: model-owner
+  status: mitigated-monitored
+
+- id: R2
+  title: Market regime drift (weather, fuel, fleet change)
+  description: >
+    The joint distribution of prices and net load shifts away from the
+    training window; model skill decays silently.
+  likelihood: high
+  impact: high
+  mitigation: >
+    PSI + KS drift monitor on key features and the prediction distribution
+    with alert thresholds (fig11); governance.check fails the release gate on
+    corroborated drift; retraining playbook = rerun forecast stage.
+  owner: model-owner
+  status: mitigated-monitored
+
+- id: R3
+  title: State-of-charge or reserve constraint violation
+  description: >
+    A schedule that overpromises energy or reserves would fail in the market
+    and can incur ISO penalties.
+  likelihood: low
+  impact: high
+  mitigation: >
+    Constraints enforced in the optimizer AND re-asserted post-solve
+    (_assert_physical refuses invalid schedules); property tests cover SOC
+    dynamics, headroom, energy-backing, and charge/discharge exclusivity.
+  owner: dispatch-owner
+  status: mitigated
+
+- id: R4
+  title: Market rule change (RTC+B evolution, product redefinition)
+  description: >
+    ERCOT protocol changes alter product definitions or co-optimization
+    rules; the dispatch model silently optimizes a market that no longer exists.
+  likelihood: medium
+  impact: medium
+  mitigation: >
+    Product set and market parameters are config, not code; risk register
+    review is part of the release checklist; operational control - subscribe
+    to ERCOT market notices (production).
+  owner: market-owner
+  status: accepted-with-controls
+
+- id: R5
+  title: Data outage or archive expiry
+  description: >
+    ERCOT MIS reports expire (observed during build - daily reports for 2024
+    were already gone); a silent gap would corrupt features and settlement.
+  likelihood: medium
+  impact: medium
+  mitigation: >
+    Ingest validates hourly continuity and fails loudly on any gap; per-year
+    raw caching; committed offline sample keeps CI independent of the source;
+    historical-archive fallbacks documented in ingest.py.
+  owner: data-owner
+  status: mitigated
+
+- id: R6
+  title: Future leakage in features
+  description: >
+    A feature quietly encodes post-issue-time information, inflating backtest
+    revenue that production can never realize.
+  likelihood: medium
+  impact: high
+  mitigation: >
+    Declared minimum legal lags (FEATURE_SPEC) enforced at build time; the
+    truncation experiment (blind the future, features must be identical) runs
+    in CI; backtest capture sanity test flags near-100% capture as suspect.
+  owner: model-owner
+  status: mitigated
+
+- id: R7
+  title: Overconfident uncertainty intervals
+  description: >
+    The stated 90% interval covers less than promised; dispatch under-positions
+    for tails and risk reporting is fiction.
+  likelihood: medium
+  impact: high
+  mitigation: >
+    Width-scaled conformal calibration with finite-sample guarantee (raw model
+    was at 68% coverage - repaired to 86%); coverage tolerance is a release
+    gate in governance.check.
+  owner: model-owner
+  status: mitigated-monitored
+
+- id: R8
+  title: Unapproved or tampered dispatch reaching deployment
+  description: >
+    An autonomous schedule ships without human review, or an approved schedule
+    is modified after approval.
+  likelihood: low
+  impact: high
+  mitigation: >
+    HITL gate - approval is bound to the SHA-256 of the schedule content and
+    logged; API refuses deployment without it; audit log is append-only with a
+    verified hash chain (tamper-evident).
+  owner: operations-owner
+  status: mitigated
+
+- id: R9
+  title: Bad model version in serving
+  description: >
+    A degraded retrain reaches the API and dispatches on worse forecasts.
+  likelihood: medium
+  impact: medium
+  mitigation: >
+    Versioned registry with metrics.json per model; release gates check the
+    CURRENT model's metrics; one-command rollback re-points to the previous
+    version and is covered by a test.
+  owner: operations-owner
+  status: mitigated
+
+- id: R10
+  title: Optimizer failure or pathological solution
+  description: >
+    Solver returns infeasible/unbounded status, or an LP artifact (simultaneous
+    charge-discharge under negative prices) slips through.
+  likelihood: low
+  impact: medium
+  mitigation: >
+    Non-optimal solver status raises; automatic MILP escalation on detected
+    overlap; post-solve physical assertions; negative-price stress test in CI.
+  owner: dispatch-owner
+  status: mitigated

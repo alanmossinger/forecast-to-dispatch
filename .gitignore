@@ -21,8 +21,11 @@ models/**/*.pt
 # CI/sample smoke-test models are ephemeral by design
 models/sample/
 
-# Audit logs are runtime artifacts (append-only JSONL), not source
+# Governance runtime state (append-only audit JSONL, approvals, gate verdicts)
+# The generated model_card.md and risk_register.md ARE committed.
 governance/audit_log.jsonl
+governance/approvals.json
+governance/gate_status.json
 
 # Notebook checkpoints
 .ipynb_checkpoints/

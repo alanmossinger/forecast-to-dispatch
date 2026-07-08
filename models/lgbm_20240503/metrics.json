@@ -40,6 +40,21 @@
       "scarcity_recall": 0.35294117647058826,
       "scarcity_hours": 17,
       "scarcity_threshold": 165.62517499999868
+    },
+    "lstm": {
+      "n_hours": 1368,
+      "pinball_q05": 2.054294429256902,
+      "pinball_q25": 8.052243484988024,
+      "pinball_q50": 13.272338490625572,
+      "pinball_q75": 15.240631759556239,
+      "pinball_q95": 12.664569126409221,
+      "pinball_mean": 10.25681545816719,
+      "coverage_90": 0.7558479532163743,
+      "coverage_50": 0.43128654970760233,
+      "mae_p50": 26.544676981251143,
+      "scarcity_recall": 0.0,
+      "scarcity_hours": 17,
+      "scarcity_threshold": 165.62517499999868
     }
   },
   "this_model": "lgbm"

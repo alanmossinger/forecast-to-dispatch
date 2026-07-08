@@ -46,8 +46,18 @@ For each of 57 days the system never saw during training, we replay history: the
 
 The result: the governed agent earned **\$3.31M**, which is **86% of the ceiling** and more than five times the floor. The missing 14% is the honest price of not knowing the future — most of it lost on a handful of extreme spike days. Why this matters: many storage studies quietly let the model "know" the future and report near-ceiling numbers; this design makes that impossible, so the 86% is a number an investor can diligence.
 
-### 6. Governance — *(Phase 6, pending)*
-The model card, risk register, drift monitor, audit trail, human approval gate, and rollback path — and the single command that blocks an ungoverned model from shipping.
+### 6. Governance — the leash, in code
+
+Six controls, all of them software you can run and test rather than policies in a binder:
+
+- **Model card** — the model's passport (what it's for, what it was trained on, how well it works, what its limits are), regenerated automatically from the real run so it can never go stale.
+- **Risk register** — ten named risks with owners and mitigations, checked for completeness by the release gate itself.
+- **Drift monitor** — statistical tripwires that compare today's market against the training data. It actually fired during this study when the Texas summer arrived; the documented, owner-signed acknowledgment of that alarm is part of the repository.
+- **Audit trail** — every decision written to an append-only log where each record is cryptographically chained to the previous one. Editing history breaks the chain, detectably.
+- **Human approval** — no schedule can be deployed until a named person approves *exactly that schedule* (the approval is tied to a fingerprint of its contents; change one number and it must be re-approved).
+- **Rollback** — one command returns the system to the previous model version, and the act itself is audited.
+
+All six funnel into a single command with a pass/fail exit code. The automated build runs it on every change: **if any control fails, the software cannot be merged or released.** That is the difference between "we have governance" and "governance is enforced."
 
 ### 7. Serving — *(Phase 7, pending)*
 The API an operator would call, with the audit log and approval gate wired into every request.

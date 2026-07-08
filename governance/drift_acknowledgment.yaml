@@ -1,0 +1,28 @@
+# Drift acknowledgments — the human side of the drift gate.
+#
+# When the monitor detects corroborated drift, the release gate (G6) fails
+# UNLESS a named owner has acknowledged it here with a reason, a linked risk,
+# and an expiry. This is the governed response loop: detect -> human decision
+# -> documented acceptance or action. An acknowledgment is NOT a mute button:
+# it expires, it names an owner, and it is version-controlled evidence that a
+# person looked.
+
+- series:
+    - rtm_lag48
+    - rtm_roll24_std
+    - dam_lag24
+    - net_load_lag48
+    - prediction_q50
+  window_end: "2024-07-31"
+  acknowledged_by: model-owner
+  date_acknowledged: "2026-07-07"
+  linked_risk: R2
+  reason: >
+    Seasonal regime shift into the ERCOT summer (rising net load and price
+    volatility vs the Jan-Apr training reference). Expected and detected by
+    design: this study deliberately freezes the May-03 model to keep the
+    walk-forward evaluation clean. Model honesty on the drifted window is
+    independently verified (90% interval coverage 0.86, revenue capture 86.1%
+    on the drifted period itself). Production action would be scheduled
+    retraining (rerun the forecast stage); for the frozen study the drift is
+    accepted through the study window end.
