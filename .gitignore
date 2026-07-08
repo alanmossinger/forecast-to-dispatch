@@ -26,6 +26,7 @@ models/sample/
 governance/audit_log.jsonl
 governance/approvals.json
 governance/gate_status.json
+governance/model_card_sample.md
 
 # Notebook checkpoints
 .ipynb_checkpoints/

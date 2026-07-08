@@ -1,0 +1,49 @@
+# CI = the governance gates, enforced. Any failing step blocks the merge:
+# lint/format, unit tests (incl. the leakage truncation proof and the HITL/
+# audit/rollback controls), the FULL offline pipeline on the committed sample
+# (zero network), and the single governance gate command.
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  gates:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install (editable, with dev extras)
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[dev]"
+
+      - name: Lint (ruff)
+        run: ruff check .
+
+      - name: Format (black --check)
+        run: black --check .
+
+      - name: Full pipeline on the committed sample (offline, network-free)
+        run: python scripts/run_pipeline.py --sample --stages ingest features forecast dispatch backtest governance
+
+      - name: Unit tests (leakage proof, physics, settlement, governance, API)
+        run: pytest -q
+
+      - name: Governance release gates (required check)
+        run: python -m forecast_to_dispatch.governance.check --sample --refresh-artifacts
+
+      - name: Upload figures
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: figures
+          path: reports/figures/*.png
+          if-no-files-found: warn

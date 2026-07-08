@@ -39,12 +39,15 @@ def _paths(config: dict[str, Any], sample: bool) -> dict[str, Path]:
     models_root = resolve_path(config, "models")
     if sample:
         models_root = models_root / "sample"
+    governance_dir = resolve_path(config, "models").parent / "governance"
     return {
         "models_root": models_root,
         "registry": registry_file(models_root, sample),
         "processed": resolve_path(config, "processed"),
-        "card": resolve_path(config, "models").parent / "governance" / "model_card.md",
-        "register": resolve_path(config, "models").parent / "governance" / "risk_register.yaml",
+        # Sample/CI runs generate their own card so the committed real-run
+        # card can never be overwritten by a smoke test.
+        "card": governance_dir / ("model_card_sample.md" if sample else "model_card.md"),
+        "register": governance_dir / "risk_register.yaml",
         "audit_log": resolve_path(config, "audit_log"),
     }
 
