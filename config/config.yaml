@@ -1,0 +1,64 @@
+# Forecast-to-Dispatch — single source of truth for all tunable parameters.
+# No magic numbers in code: battery specs, hub, quantiles, and date ranges live here.
+
+market:
+  iso: ercot
+  hub: HB_HOUSTON              # ERCOT trading hub (settlement point) we forecast and dispatch at
+  timezone: US/Central
+  comparison_iso: caiso        # generalization check
+  comparison_hub: TH_SP15_GEN-APND
+
+dates:
+  start: "2024-01-01"
+  end: "2024-06-30"
+  # Committed sample window — a few weeks that ship with the repo so the whole
+  # pipeline runs offline (CI and --sample mode). Chosen to include both calm
+  # and volatile price days so every downstream figure is meaningful.
+  sample_start: "2024-05-01"
+  sample_end: "2024-05-31"
+
+battery:
+  power_mw: 100                # max charge/discharge rate
+  energy_mwh: 200              # usable energy capacity (2-hour battery)
+  # One-way efficiencies; round trip = 0.959 * 0.959 ≈ 0.92
+  eta_charge: 0.959
+  eta_discharge: 0.959
+  soc_min_mwh: 0.0
+  soc_max_mwh: 200.0
+  soc_initial_mwh: 100.0
+  # $/MWh of throughput — a linear proxy for cycling degradation. It also acts
+  # as the economic brake that stops the optimizer from churning on tiny spreads.
+  degradation_cost_per_mwh: 2.0
+
+# ERCOT ancillary service products (RTC+B co-optimized set)
+ancillary_services:
+  - REGUP      # Regulation Up
+  - REGDN      # Regulation Down
+  - RRS        # Responsive Reserve Service
+  - NSPIN      # Non-Spinning Reserve
+  - ECRS       # ERCOT Contingency Reserve Service
+
+forecast:
+  quantiles: [0.05, 0.25, 0.50, 0.75, 0.95]
+  target: rtm_price            # next-day hourly real-time settlement point price
+  horizon_hours: 24
+  # A "scarcity hour" = realized price in the top percentile of the training window.
+  # Scarcity recall asks: did P95 rise above the scarcity threshold in those hours?
+  scarcity_percentile: 0.99
+  # Acceptance band for interval honesty: |empirical 90% coverage - 0.90| <= tolerance
+  coverage_tolerance: 0.08
+  random_seed: 42
+
+governance:
+  drift:
+    psi_threshold: 0.2         # PSI > 0.2 = meaningful shift, gate fails
+    ks_pvalue_threshold: 0.01  # KS p < 0.01 = distribution changed, gate fails
+  model_registry: models
+
+paths:
+  raw: data/raw
+  processed: data/processed
+  sample: data/sample
+  models: models
+  figures: reports/figures
+  audit_log: governance/audit_log.jsonl

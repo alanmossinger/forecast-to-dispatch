@@ -1,0 +1,54 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "forecast-to-dispatch"
+version = "0.1.0"
+description = "Governed price-spread forecasting and battery dispatch for wholesale power markets (ERCOT primary, CAISO comparison)."
+requires-python = ">=3.11"
+dependencies = [
+    "gridstatus",
+    "lightgbm",
+    "pandas",
+    "numpy",
+    "scikit-learn",
+    "cvxpy",
+    "shap",
+    "pyyaml",
+    "fastapi",
+    "uvicorn",
+    "pydantic",
+    "matplotlib",
+    "plotly",
+    "pyarrow",
+    "holidays",
+    "torch",
+    "highspy",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest",
+    "ruff",
+    "black",
+    "httpx",
+    "jupyter",
+    "nbconvert",
+    "nbformat",
+    "ipykernel",
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.black]
+line-length = 100
+target-version = ["py311", "py312"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

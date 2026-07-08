@@ -1,0 +1,31 @@
+# Environments
+.venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+
+# Data — only the committed sample ships with the repo
+data/raw/
+data/processed/
+!data/raw/.gitkeep
+!data/processed/.gitkeep
+
+# Model binaries — metadata (metrics JSON, registry) is tracked, weights are not
+models/*.pkl
+models/*.pt
+models/*.txt
+models/**/*.pkl
+models/**/*.pt
+
+# Audit logs are runtime artifacts (append-only JSONL), not source
+governance/audit_log.jsonl
+
+# Notebook checkpoints
+.ipynb_checkpoints/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
