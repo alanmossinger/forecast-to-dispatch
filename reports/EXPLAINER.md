@@ -20,8 +20,11 @@ Three public ERCOT price streams are pulled from the ISO's historical archives (
 
 Two honesty rules are enforced in code: the assembled dataset **fails loudly if any hour is missing** (a silent gap would corrupt every revenue number downstream), and a small **offline sample ships with the repository** so anyone — including the automated CI gates — can rerun the entire pipeline with no network access and get the same numbers.
 
-### 2. Features — *(Phase 2, pending)*
-What the model is allowed to know at forecast time, and how we prove nothing from the future leaks in.
+### 2. Features — what the model is allowed to know
+
+The forecast for tomorrow is issued at **9 a.m. today**, before ERCOT's day-ahead market closes. The model's inputs are only things genuinely knowable at that moment: real-time prices through *the day before yesterday*, day-ahead prices through *today* (they were published yesterday afternoon), recent system load and wind/solar output, and the calendar.
+
+How do we know nothing from the future leaks in? We *prove* it: take one delivery day, delete from the dataset everything that was still unknown at its 9 a.m. issue moment, rebuild the model's inputs from the censored data — and check they come out identical. They do, for every feature, and this experiment runs automatically in the release gates. Why it matters: future leakage is how storage backtests quietly overstate revenue by 20% or more; this system makes that failure impossible rather than merely unlikely.
 
 ### 3. Forecast — *(Phase 3, pending)*
 Why we forecast five quantiles instead of one number, and how we measure honesty about uncertainty.

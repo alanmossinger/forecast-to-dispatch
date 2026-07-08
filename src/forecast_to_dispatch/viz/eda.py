@@ -121,6 +121,85 @@ def fig17_dam_rtm_spread_dist(panel: pd.DataFrame, save: bool = True) -> plt.Fig
     return fig
 
 
+def fig19_feature_target_relationships(
+    panel: pd.DataFrame,
+    exog: pd.DataFrame,
+    X: pd.DataFrame,
+    y: pd.Series,
+    save: bool = True,
+) -> plt.Figure:
+    """Small multiples: market physics (top) vs what the model may see (bottom).
+
+    Why this matters: before trusting any ML, we show the physical logic the
+    model is supposed to learn — prices rise with net load and fall with
+    renewables (top row, same-hour physics). The bottom row shows the SAME
+    relationships through the only lens the model is allowed: leakage-safe
+    lagged features vs the next-day target. The signal survives the lag —
+    weaker, but real. That gap between the rows is, precisely, the forecasting
+    problem.
+    """
+    apply_style()
+    joined = panel.join(exog, how="inner")
+
+    def _scatter(ax, x, yy, xlabel, n_bins=20):
+        ax.scatter(x, yy, s=4, alpha=0.15, color=PALETTE["blue"], rasterized=True)
+        bins = pd.qcut(x, n_bins, duplicates="drop")
+        binned = yy.groupby(bins, observed=True).mean()
+        centers = [iv.mid for iv in binned.index]
+        ax.plot(centers, binned, color=PALETTE["vermillion"], lw=2.5, label="binned mean")
+        ax.set_yscale("symlog", linthresh=100)
+        ax.set_xlabel(xlabel)
+
+    fig, axes = plt.subplots(2, 3, figsize=(14, 8.5), sharey=True)
+
+    _scatter(
+        axes[0, 0], joined["net_load_mw"] / 1e3, joined["rtm_price"], "Net load (GW), same hour"
+    )
+    _scatter(
+        axes[0, 1], joined["solar_mw"] / 1e3, joined["rtm_price"], "Solar output (GW), same hour"
+    )
+    _scatter(
+        axes[0, 2], joined["load_mw"] / 1e3, joined["rtm_price"], "System load (GW), same hour"
+    )
+    axes[0, 0].set_ylabel("RTM price ($/MWh, symlog)")
+
+    common = X.index.intersection(y.index)
+    _scatter(
+        axes[1, 0],
+        X.loc[common, "net_load_lag48"] / 1e3,
+        y.loc[common],
+        "Net load 48h earlier (GW)",
+    )
+    _scatter(
+        axes[1, 1], X.loc[common, "rtm_lag168"], y.loc[common], "RTM price 1 week earlier ($/MWh)"
+    )
+    _scatter(axes[1, 2], X.loc[common, "dam_lag24"], y.loc[common], "DAM price, prior day ($/MWh)")
+    axes[1, 0].set_ylabel("Next-day RTM price ($/MWh)")
+
+    for ax in axes.flat:
+        ax.legend(fontsize=8, loc="upper left")
+    fig.suptitle(
+        "Prices follow net load — and the signal survives the leakage-safe lag",
+        x=0.01,
+        ha="left",
+        fontsize=15,
+        fontweight="bold",
+    )
+    axes[0, 0].set_title(
+        "Market physics (contemporaneous)", loc="left", fontsize=11, fontweight="normal"
+    )
+    axes[1, 0].set_title(
+        "The model's causal view (lagged features only)",
+        loc="left",
+        fontsize=11,
+        fontweight="normal",
+    )
+    fig.tight_layout(rect=(0, 0, 1, 0.96))
+    if save:
+        save_fig(fig, "fig19_feature_target_relationships")
+    return fig
+
+
 def fig18_scarcity_calendar(
     panel: pd.DataFrame, scarcity_percentile: float = 0.99, save: bool = True
 ) -> plt.Figure:

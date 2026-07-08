@@ -17,10 +17,12 @@ import sys
 
 from forecast_to_dispatch.config import load_config
 from forecast_to_dispatch.data import ingest
+from forecast_to_dispatch.features import build as features_build
 
 # Stages register here phase by phase: name -> callable(config, args)
 STAGES: dict[str, object] = {
     "ingest": ingest.run,
+    "features": features_build.run,
 }
 
 PLANNED_STAGES = ["ingest", "features", "forecast", "dispatch", "backtest", "governance"]

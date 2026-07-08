@@ -26,9 +26,15 @@ The day-ahead-minus-real-time (DART) spread averaged only **+$3.3/MWh** but with
 
 Only **22 of 181 days** produced an hour above the P99 scarcity threshold ($171/MWh), and they arrive in visible bursts — early April and early May clusters — separated by long calm stretches. Scarcity is regime-driven: weather, outages, and net-load stress land together. **Business consequence:** a model trained in a calm regime can silently lose tail sensitivity, which is exactly what the Phase 6 drift monitor is built to catch before it costs money; and an operator should evaluate this asset in paydays per season, not average daily revenue.
 
-## 2. What the model is allowed to know *(Phase 2, pending)*
+## 2. What the model is allowed to know
 
-<!-- fig19_feature_target_relationships -->
+*Feature matrix: 4,128 forecastable hours × 28 leakage-safe features. Every forecast is issued at 09:00 on D-1 (before ERCOT's 10:00 DAM gate closure); every feature's minimum legal lag is declared in code (`FEATURE_SPEC`) and enforced by tests, including a truncation experiment that rebuilds a delivery day's features with the future blinded and asserts bit-identical output.*
+
+![Feature-target relationships](figures/fig19_feature_target_relationships.png)
+
+The top row shows the market physics the model must learn: real-time price rises with same-hour net load at Spearman ρ = **0.82**, with the classic scarcity nonlinearity — flat for most of the range, explosive in the top decile. The bottom row shows the same world through the only lens the model is allowed: net load 48h earlier still carries ρ = **0.45** against the next-day price, and the prior-day DAM price — the market's own published expectation — carries ρ = **0.54**. The signal weakens under the honesty constraint but survives. **Business consequence:** the gap between the two rows *is* the forecasting problem, and it is why the eventual revenue-capture number will sit meaningfully below the perfect-foresight ceiling — any storage backtest whose capture approaches 100% should be presumed leaky.
+
+One deliberate limitation, recorded in the model card: ERCOT's historical day-ahead *forecast* archives (load/wind/solar) expire and cannot be reconstructed for 2024, so the model uses lagged actuals as persistence proxies — strictly weaker information than a production forecast feed. Reported results are therefore a **conservative floor**.
 
 ## 3. Forecast quality — especially the tails *(Phase 3, pending)*
 
