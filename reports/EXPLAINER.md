@@ -1,12 +1,16 @@
 # How a price forecast becomes a bid becomes revenue — and where the guardrails sit
 
-*A plain-language walkthrough for the non-coder reader. Updated as each module lands.*
+*A plain-language walkthrough for the non-coder reader. Every number and every picture comes from the system's real runs on real ERCOT market data.*
 
 ---
 
 ## The one-paragraph version
 
 A grid-scale battery makes money by buying power when it is cheap and selling it — as energy or as standby reserves — when it is expensive. Prices in ERCOT swing from below \$0 to thousands of dollars per MWh, and most of a battery's annual revenue arrives in a handful of scarcity hours. This system (1) forecasts a **range** of possible prices for every hour of tomorrow, (2) computes the most profitable battery schedule against that forecast, and (3) refuses to act unless a set of governance checks — and a human — sign off. Every decision is logged permanently, and the reported revenue is settled at the prices that *actually happened*, never at the forecast.
+
+![The whole system on one page](figures/fig13_architecture.png)
+
+*The map of everything below: data flows left to right into decisions; the governance rail underneath watches, records, and can veto; and one automated release gate blocks anything ungoverned from shipping. The result of running this loop over 57 unseen days: **\$3.31 million in settled revenue — 86% of what a crystal ball could have earned.***
 
 ## Stage by stage
 
@@ -20,11 +24,19 @@ Three public ERCOT price streams are pulled from the ISO's historical archives (
 
 Two honesty rules are enforced in code: the assembled dataset **fails loudly if any hour is missing** (a silent gap would corrupt every revenue number downstream), and a small **offline sample ships with the repository** so anyone — including the automated CI gates — can rerun the entire pipeline with no network access and get the same numbers.
 
+![Where the money lives](figures/fig15_price_duration_curve.png)
+
+*Half a year of real prices, sorted from most to least expensive: the top 1% of hours carries 18% of all the price value. This one picture is the reason the whole system is built around rare events rather than averages.*
+
 ### 2. Features — what the model is allowed to know
 
 The forecast for tomorrow is issued at **9 a.m. today**, before ERCOT's day-ahead market closes. The model's inputs are only things genuinely knowable at that moment: real-time prices through *the day before yesterday*, day-ahead prices through *today* (they were published yesterday afternoon), recent system load and wind/solar output, and the calendar.
 
 How do we know nothing from the future leaks in? We *prove* it: take one delivery day, delete from the dataset everything that was still unknown at its 9 a.m. issue moment, rebuild the model's inputs from the censored data — and check they come out identical. They do, for every feature, and this experiment runs automatically in the release gates. Why it matters: future leakage is how storage backtests quietly overstate revenue by 20% or more; this system makes that failure impossible rather than merely unlikely.
+
+![What the model is allowed to see](figures/fig19_feature_target_relationships.png)
+
+*Top row: how prices really move with electricity demand (net of wind and solar) — the physics. Bottom row: the same relationships seen only through information legitimately available the morning before. The signal weakens but survives — that surviving signal is what the model gets paid for finding.*
 
 ### 3. Forecast — five quantiles, not one number
 
@@ -34,17 +46,33 @@ Two honesty mechanisms guard the forecast. First, the stated ranges are *calibra
 
 We also trained a fashionable deep-learning model (an LSTM) behind the same interface and scored it identically. It lost on every metric, so the simpler, explainable model ships — a decision made on evidence, and documented, which is itself part of the governance story.
 
+![The forecast as a breathing band](figures/fig01_forecast_fan.png)
+
+*One real week: the orange band is the model's stated range of possible prices, the blue line is what actually happened. The band stays narrow on calm days and stretches wide before stressed evenings — that widening is the model saying "risk ahead," and it is the signal the battery acts on.*
+
 ### 4. Dispatch — the forecast becomes a plan
 
 An optimizer turns the price forecast into a 24-hour operating plan: buy energy in the cheap hours, sell it in the expensive ones, and in between rent the battery out as *standby capacity* — the grid pays for megawatts held ready (reserves), often more reliably than the buy-low/sell-high trade itself.
 
 The optimizer is bound by the battery's physics, written as hard constraints it cannot violate: energy is conserved (with ~8% round-trip loss), the tank can't overfill, the inverter has a power rating, any megawatt promised as reserve must be backed by real headroom *and* real stored energy, and every cycle pays a wear-and-tear cost. The system checks every schedule against these rules before releasing it, and automated tests prove the checks work. One subtlety: when power prices go negative (windy Texas nights), a naive optimizer tries to waste energy by charging and discharging at once — the system detects this and switches to a stricter solve that forbids it.
 
+![One day of decisions](figures/fig06_dispatch_day.png)
+
+*The day of the biggest price spike in the study, planned entirely the morning before: the battery rents out its capacity as reserves nearly every hour (middle panel), keeps its energy in the tank all day (bottom panel), and spends it into the expensive evening. Expected profit on this single day: \$54,550 — about 99% of it from standby reserves.*
+
 ### 5. Backtest — decide on the forecast, settle on reality
 
 For each of 57 days the system never saw during training, we replay history: the agent commits its full-day plan using only what it legitimately knew the morning before, then the plan is paid out at the prices that *actually happened*. We also compute two reference points: a **ceiling** (a crystal-ball operator who knew tomorrow's prices — impossible, but it scales the result honestly) and a **floor** (a no-model strategy that just follows the average historical day).
 
 The result: the governed agent earned **\$3.31M**, which is **86% of the ceiling** and more than five times the floor. The missing 14% is the honest price of not knowing the future — most of it lost on a handful of extreme spike days. Why this matters: many storage studies quietly let the model "know" the future and report near-ceiling numbers; this design makes that impossible, so the 86% is a number an investor can diligence.
+
+![The money chart](figures/fig07_cumulative_revenue.png)
+
+*Green: what the governed agent actually earned, day by day, at real prices. Grey: the impossible best case. Light blue: the no-model floor. The green line pulling away from the floor immediately — and jumping together with the ceiling on spike days — is what "the agent was positioned" looks like in money.*
+
+![How much of the pie was captured](figures/fig08_revenue_capture_bar.png)
+
+*The same result as one honest comparison: 16% of available value without a model, 86% with the governed agent, 100% only with a crystal ball. The gap between the last two bars is reported, measured, and explained — not hidden.*
 
 ### 6. Governance — the leash, in code
 
@@ -58,6 +86,14 @@ Six controls, all of them software you can run and test rather than policies in 
 - **Rollback** — one command returns the system to the previous model version, and the act itself is audited.
 
 All six funnel into a single command with a pass/fail exit code. The automated build runs it on every change: **if any control fails, the software cannot be merged or released.** That is the difference between "we have governance" and "governance is enforced."
+
+![The release gates](figures/fig12_gate_status.png)
+
+*The nine checks, with their live verdicts. Note gate G6: the drift monitor genuinely fired during this study (the Texas summer arrived), and it passes only because a named owner formally acknowledged the alarm with a reason and an expiry date — the alarm-and-response loop working as designed.*
+
+![Every decision on the record](figures/fig24_audit_trail_flow.png)
+
+*A real excerpt of the decision log: forecast issued → schedule created → human approval → settlement, each entry cryptographically chained to the previous one. Change any historical record and the chain visibly breaks.*
 
 ### 7. Serving — the operator's interface
 

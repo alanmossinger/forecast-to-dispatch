@@ -1,8 +1,17 @@
 # Results — the market story in figures
 
-*One narrative: the market problem → how well we forecast (especially the tails) → the revenue the governed agent captures → proof it is governed. Every figure below is embedded with a 3–5 sentence interpretation ending in a business consequence. Figures are produced by real runs on real data — no number here is invented.*
+*One narrative: the market problem → how well we forecast (especially the tails) → the revenue the governed agent captures → proof it is governed. Every figure is embedded with an interpretation ending in a business consequence. All 24 figures are produced by real runs on real ERCOT data — no number in this document is invented.*
 
-> Status: populated phase by phase. Sections appear as their figures land.
+## Executive summary
+
+| Question | Answer |
+|---|---|
+| How much money, honestly measured? | **$3.31M settled over 57 out-of-sample days** — dispatched on forecasts, settled at realized prices |
+| How much of the available value is that? | **86.1%** of the perfect-foresight ceiling ($3.85M); **+447%** vs the naive floor ($0.61M) |
+| Where did it come from? | **96% ancillary-service stacking** (ECRS $1.88M leading) + energy arbitrage into spikes |
+| Is the forecast honest? | 90% interval covers **86%** empirically (conformally calibrated; the raw model's 68% was rejected) |
+| Did it see the big one coming? | The P95 crossed the scarcity threshold ahead of the **$3,049/MWh** May 8 spike |
+| Is it governed? | **9/9 release gates pass**; drift monitor fired on the summer regime (PSI 4.75) and was formally acknowledged; tamper-evident audit chain; human approval required to deploy |
 
 ---
 
