@@ -6,7 +6,7 @@ Real ERCOT market data. Real trained models. Every dollar settled at the prices 
 
 ## About the author
 
-I'm **Alan Mössinger** — an AI and energy executive with 20+ years at Petrobras, where I led AI and data science across a multi-billion-dollar global exploration portfolio. I build AI the way capital actually gets allocated in energy: under deep uncertainty, with asymmetric downside, and accountable to auditors. This project is that approach in working code — a real-money decision agent that forecasts, dispatches, and reports revenue you can act on. It's the reference implementation behind my thesis that AI is a capital-allocation and risk-management discipline, not an IT tool.
+I'm **Alan Mössinger** — an AI and energy executive with 20+ years at Petrobras. I build AI the way capital actually gets allocated in energy: under deep uncertainty, with asymmetric downside, and accountable to auditors. This project is that approach in working code — a real-money decision agent that forecasts, dispatches, and reports revenue you can act on. It's the reference implementation behind my thesis that AI is a capital-allocation and risk-management discipline, not an IT tool.
 
 **Connect:** [LinkedIn](https://www.linkedin.com/in/alan-m%C3%B6ssinger/) · [VEX AI-Tech](https://vexaitech.com/)
 
