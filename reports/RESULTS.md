@@ -81,9 +81,43 @@ P50 errors concentrate in the evening ramp and explode in scarcity hours — exa
 
 One day of decisions on the May 8 spike day, dispatched entirely on the day-before forecast: the battery rents its headroom as reserves nearly every hour (Reg-Down against the charge side; Non-Spin/ECRS/Reg-Up against the discharge side), holds ~100 MWh through the day, spends it into the evening window, and ends at its starting state of charge. Of the **$54,550** expected profit at forecast prices, **~99% came from ancillary services** — the RTC+B revenue-stacking thesis in one picture. Note the forecast (orange) caught the spike's *timing* but not its $3,049 magnitude; the battery still positioned correctly, and being right about *when* is what pays. **Business consequence:** an energy-only optimization would have left most of this day's value on the table; co-optimization is not a refinement, it is the product.
 
-## 5. The money story *(Phase 5, pending)*
+## 5. The money story
 
-<!-- fig07_cumulative_revenue (headline), fig08_revenue_capture_bar, fig09_revenue_stack, fig10_cost_of_imperfection, fig21_soc_heatmap, fig22_reserve_allocation, fig23_monthly_revenue -->
+*Protocol: walk-forward over all 57 out-of-sample days (May 4 – Jun 29, 2024). Each morning the agent commits a full-day schedule from its quantile forecast + persistence AS prices; the schedule then settles at realized prices. Per-day invariant (tested in CI): no policy ever settles above the perfect-foresight optimizer.*
+
+| Policy | Settled revenue (57 days) | Share of ceiling |
+|---|---|---|
+| Perfect foresight (ceiling) | $3.85M | 100% |
+| **Governed forecast-driven** | **$3.31M** | **86.1%** |
+| Naive average-day (floor) | $0.61M | 15.7% |
+
+![Cumulative revenue](figures/fig07_cumulative_revenue.png)
+
+**The headline: 86% revenue capture, +447% over naive.** The governed line tracks the ceiling and separates from the floor immediately and permanently — capability, not luck. On spike days the ceiling and the governed line jump *together* (the agent was positioned) while naive barely moves. **Business consequence:** this is the number to quote — 86% of theoretically available value, realized with honest day-ahead information only.
+
+![Revenue capture](figures/fig08_revenue_capture_bar.png)
+
+The remaining 14% is the irreducible price of not knowing the future — reported, not hidden. **Business consequence:** the model's contribution is the distance between the naive and governed bars; the method's honesty is the visible existence of the ceiling bar.
+
+![Revenue stack](figures/fig09_revenue_stack.png)
+
+Revenue stacking under RTC+B, settled at real prices: ancillary services carried **96% of gross revenue** (ECRS $1.88M, Reg-Down $0.65M, Non-Spin $0.56M), energy arbitrage $0.14M, degradation −$21k. Reserve prices are strongly autocorrelated, so even persistence forecasting captures them well; energy spikes are where perfect foresight out-earns everyone. **Business consequence:** an energy-only model would leave ~96% of this asset's value on the table — co-optimization *is* the product.
+
+![Cost of imperfection](figures/fig10_cost_of_imperfection.png)
+
+The gap to perfection correlates with daily forecast error (r > 0) and concentrates brutally: the worst 5 days carry most of the cumulative gap — spike days where the P95 flagged elevated risk but not full magnitude. **Business consequence:** this chart prices the profit-overestimation trap that leaky backtests book as revenue; it also directs the next modeling dollar (tail magnitude, not average accuracy).
+
+![SOC heatmap](figures/fig21_soc_heatmap.png)
+
+Systematic, legible behavior: charge builds through the cheap midday solar trough (yellow), stands at ~103 MWh entering the evening window, drains into the 20:00+ hours (dark), and recovers overnight — every day, without ever seeing tomorrow's prices. **Business consequence:** repeatable, explainable behavior is what an operator can actually trust.
+
+![Reserve allocation](figures/fig22_reserve_allocation.png)
+
+The same megawatts earn twice: reserves carry the calm days as steady income; energy discharge takes over on stressed days. The reallocation follows the forecast automatically. **Business consequence:** this adaptive shift is the value RTC+B co-optimization exists to unlock, demonstrated on real prices.
+
+![Monthly revenue](figures/fig23_monthly_revenue.png)
+
+Both months show the same structure — governed near the ceiling, far above the floor — so the 86% is not one lucky afternoon. **Business consequence:** consistency across regimes separates a strategy from a story; whether the pattern persists is exactly what the Phase 6 drift monitor watches.
 
 ## 6. Proof it is governed *(Phase 6, pending)*
 

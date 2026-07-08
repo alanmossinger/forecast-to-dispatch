@@ -40,8 +40,11 @@ An optimizer turns the price forecast into a 24-hour operating plan: buy energy 
 
 The optimizer is bound by the battery's physics, written as hard constraints it cannot violate: energy is conserved (with ~8% round-trip loss), the tank can't overfill, the inverter has a power rating, any megawatt promised as reserve must be backed by real headroom *and* real stored energy, and every cycle pays a wear-and-tear cost. The system checks every schedule against these rules before releasing it, and automated tests prove the checks work. One subtlety: when power prices go negative (windy Texas nights), a naive optimizer tries to waste energy by charging and discharging at once — the system detects this and switches to a stricter solve that forbids it.
 
-### 5. Backtest — *(Phase 5, pending)*
-Decide on the forecast, settle on reality: the mechanism that keeps the revenue claim honest.
+### 5. Backtest — decide on the forecast, settle on reality
+
+For each of 57 days the system never saw during training, we replay history: the agent commits its full-day plan using only what it legitimately knew the morning before, then the plan is paid out at the prices that *actually happened*. We also compute two reference points: a **ceiling** (a crystal-ball operator who knew tomorrow's prices — impossible, but it scales the result honestly) and a **floor** (a no-model strategy that just follows the average historical day).
+
+The result: the governed agent earned **\$3.31M**, which is **86% of the ceiling** and more than five times the floor. The missing 14% is the honest price of not knowing the future — most of it lost on a handful of extreme spike days. Why this matters: many storage studies quietly let the model "know" the future and report near-ceiling numbers; this design makes that impossible, so the 86% is a number an investor can diligence.
 
 ### 6. Governance — *(Phase 6, pending)*
 The model card, risk register, drift monitor, audit trail, human approval gate, and rollback path — and the single command that blocks an ungoverned model from shipping.

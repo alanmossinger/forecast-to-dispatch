@@ -18,6 +18,7 @@ import sys
 from forecast_to_dispatch.config import load_config
 from forecast_to_dispatch.data import ingest
 from forecast_to_dispatch.features import build as features_build
+from forecast_to_dispatch.backtest import engine as backtest_engine
 from forecast_to_dispatch.forecast import train as forecast_train
 from forecast_to_dispatch.optimize import dispatch as optimize_dispatch_stage
 
@@ -27,6 +28,7 @@ STAGES: dict[str, object] = {
     "features": features_build.run,
     "forecast": forecast_train.run,
     "dispatch": optimize_dispatch_stage.run,
+    "backtest": backtest_engine.run,
 }
 
 PLANNED_STAGES = ["ingest", "features", "forecast", "dispatch", "backtest", "governance"]
