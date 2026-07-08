@@ -73,9 +73,13 @@ P50 errors concentrate in the evening ramp and explode in scarcity hours — exa
 
 \* *Climatology P50 MAE computed for context; its pinball already includes it.*
 
-## 4. From forecast to dispatch *(Phase 4, pending)*
+## 4. From forecast to dispatch
 
-<!-- fig06_dispatch_day -->
+*The decision-maker: a cvxpy linear program co-optimizing energy arbitrage and all five ERCOT ancillary products under state-of-charge dynamics (round-trip efficiency ≈ 0.92), power limits, reserve headroom + energy-backing constraints, a $2/MWh degradation cost, and a cyclic end-of-day SOC. The optimizer sees forecast prices only; simultaneous charge/discharge is auto-detected and eliminated by MILP escalation (HiGHS) — needed only under negative prices, as the spec predicted.*
+
+![Dispatch day](figures/fig06_dispatch_day.png)
+
+One day of decisions on the May 8 spike day, dispatched entirely on the day-before forecast: the battery rents its headroom as reserves nearly every hour (Reg-Down against the charge side; Non-Spin/ECRS/Reg-Up against the discharge side), holds ~100 MWh through the day, spends it into the evening window, and ends at its starting state of charge. Of the **$54,550** expected profit at forecast prices, **~99% came from ancillary services** — the RTC+B revenue-stacking thesis in one picture. Note the forecast (orange) caught the spike's *timing* but not its $3,049 magnitude; the battery still positioned correctly, and being right about *when* is what pays. **Business consequence:** an energy-only optimization would have left most of this day's value on the table; co-optimization is not a refinement, it is the product.
 
 ## 5. The money story *(Phase 5, pending)*
 

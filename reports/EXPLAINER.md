@@ -34,8 +34,11 @@ Two honesty mechanisms guard the forecast. First, the stated ranges are *calibra
 
 We also trained a fashionable deep-learning model (an LSTM) behind the same interface and scored it identically. It lost on every metric, so the simpler, explainable model ships — a decision made on evidence, and documented, which is itself part of the governance story.
 
-### 4. Dispatch — *(Phase 4, pending)*
-How the optimizer turns a price forecast into an hourly charge/discharge/reserve schedule without ever breaking the battery's physics.
+### 4. Dispatch — the forecast becomes a plan
+
+An optimizer turns the price forecast into a 24-hour operating plan: buy energy in the cheap hours, sell it in the expensive ones, and in between rent the battery out as *standby capacity* — the grid pays for megawatts held ready (reserves), often more reliably than the buy-low/sell-high trade itself.
+
+The optimizer is bound by the battery's physics, written as hard constraints it cannot violate: energy is conserved (with ~8% round-trip loss), the tank can't overfill, the inverter has a power rating, any megawatt promised as reserve must be backed by real headroom *and* real stored energy, and every cycle pays a wear-and-tear cost. The system checks every schedule against these rules before releasing it, and automated tests prove the checks work. One subtlety: when power prices go negative (windy Texas nights), a naive optimizer tries to waste energy by charging and discharging at once — the system detects this and switches to a stricter solve that forbids it.
 
 ### 5. Backtest — *(Phase 5, pending)*
 Decide on the forecast, settle on reality: the mechanism that keeps the revenue claim honest.

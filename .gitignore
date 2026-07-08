@@ -18,6 +18,8 @@ models/*.pt
 models/*.txt
 models/**/*.pkl
 models/**/*.pt
+# CI/sample smoke-test models are ephemeral by design
+models/sample/
 
 # Audit logs are runtime artifacts (append-only JSONL), not source
 governance/audit_log.jsonl

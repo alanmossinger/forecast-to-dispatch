@@ -25,6 +25,12 @@ from forecast_to_dispatch.forecast.metrics import evaluate_quantile_forecast
 from forecast_to_dispatch.forecast.quantile_lgbm import QuantileLGBM
 
 
+def registry_file(models_root: Path, fast: bool) -> Path:
+    """The registry the current mode reads/writes: sample (fast) runs get their
+    own file so CI can never re-point production to a smoke-test model."""
+    return models_root / ("registry_sample.json" if fast else "registry.json")
+
+
 def chronological_split(
     X: pd.DataFrame, y: pd.Series, test_fraction: float = 0.33
 ) -> tuple[pd.DataFrame, pd.Series, pd.DataFrame, pd.Series]:
@@ -65,6 +71,11 @@ def train_forecaster(
     quantiles = config["forecast"]["quantiles"]
     seed = config["forecast"]["random_seed"]
     y = targets["y_price"]
+
+    # Smoke-test artifacts live in their own (gitignored) subtree so they can
+    # never be confused with — or overwrite — the studied production models.
+    if fast:
+        models_root = models_root / "sample"
 
     X_tr, y_tr, X_te, y_te = chronological_split(X, y)
     # Scarcity threshold comes from the TRAINING window only — the evaluation
@@ -121,7 +132,9 @@ def train_forecaster(
 
     # LGBM is the production model (registry 'current'); the LSTM is the
     # challenger kept for comparison. Rollback (Phase 6) re-points 'current'.
-    registry_path = models_root / "registry.json"
+    # Fast/sample runs write a SEPARATE registry so a CI smoke model can never
+    # silently replace the studied production pointer.
+    registry_path = registry_file(models_root, fast)
     previous = None
     if registry_path.exists():
         previous = json.loads(registry_path.read_text()).get("current")
