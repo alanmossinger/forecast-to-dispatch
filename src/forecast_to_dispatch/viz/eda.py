@@ -4,7 +4,7 @@ Why this matters: before any model is trusted, these four figures establish the
 market problem in the executive's language — revenue lives in a small number of
 scarcity hours, concentrated in a predictable evening window, on episodic days.
 Every figure computes its headline number from the data and states it in the
-title (the style guide §6: title = takeaway, subtitle = detail).
+title (house style: title = takeaway, subtitle = detail — see viz/style.py).
 """
 
 from __future__ import annotations

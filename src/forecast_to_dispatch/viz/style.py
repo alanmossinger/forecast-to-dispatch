@@ -5,7 +5,7 @@ A consistent, colorblind-safe style with conclusion-as-title makes the whole
 report read as one system, and guarantees any reviewer — including the ~5% of
 men with color-vision deficiency — can read the money charts correctly.
 
-Conventions enforced here (per the style guide §6):
+Conventions enforced here (the repo-wide figure standard):
 - Okabe-Ito colorblind-safe palette, with fixed semantic roles
   (price=blue, forecast band=orange, revenue=green, alerts=vermillion).
 - Title states the takeaway; subtitle carries the axis-level detail.
@@ -95,7 +95,7 @@ def save_fig(fig: plt.Figure, name: str) -> Path:
     """Save a figure to reports/figures/<name>.png at publication DPI.
 
     Fails loudly if the name doesn't follow the figNN_slug catalog convention,
-    so the figure catalog in the style guide stays authoritative.
+    so the fig01-fig24 catalog embedded in reports/RESULTS.md stays authoritative.
     """
     if not name.startswith("fig"):
         raise ValueError(f"Figure name must follow the catalog convention 'figNN_slug': {name}")
