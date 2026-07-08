@@ -1,31 +1,37 @@
 # Forecast-to-Dispatch
 
-**A governed autonomous agent that forecasts wholesale power prices, dispatches a grid-scale battery, and proves — with enforceable release gates — that its revenue numbers can be trusted.**
+**A machine-learning system that forecasts wholesale power prices and dispatches a grid-scale battery to capture 86% of the theoretically available revenue — on real ERCOT data, measured honestly.**
 
-Real ERCOT market data. Real trained models. Revenue settled at the prices that actually happened. Governance you can execute, not read about.
+Real ERCOT market data. Real trained models. Every dollar settled at the prices that actually happened — never at the forecast that made them look good.
+
+## About the author
+
+I'm **Alan Mössinger** — an AI and energy executive with 20+ years at Petrobras, where I led AI and data science across a multi-billion-dollar global exploration portfolio. I build AI the way capital actually gets allocated in energy: under deep uncertainty, with asymmetric downside, and accountable to auditors. This project is that approach in working code — a real-money decision agent that forecasts, dispatches, and reports revenue you can act on. It's the reference implementation behind my thesis that AI is a capital-allocation and risk-management discipline, not an IT tool.
+
+**Connect:** [LinkedIn](https://www.linkedin.com/in/alan-m%C3%B6ssinger/) · [VEX AI-Tech](https://vexaitech.com/)
 
 ---
 
-## The business case
+## The opportunity
 
-Grid-scale batteries have become system-critical assets in ERCOT, but their revenue does not come from average prices — it comes from **spreads** and from a handful of **scarcity hours**. In the study window of this project, real-time prices at the Houston hub averaged $27/MWh yet peaked at **$3,049/MWh**; the top **1% of hours carried 18% of all price value**. A battery that is charged before the right evenings — and rents out its idle megawatts as ancillary reserves in between — earns multiples of one that follows the average day.
+Grid-scale batteries have become system-critical assets in ERCOT, but their revenue doesn't come from average prices — it comes from **spreads** and from a handful of **scarcity hours**. In this project's study window, real-time prices at the Houston hub averaged $27/MWh yet peaked at **$3,049/MWh**; the top **1% of hours carried 18% of all price value**. A battery charged before the right evenings — renting its idle megawatts as ancillary reserves in between — earns multiples of one that follows the average day.
 
-Two problems stand between that opportunity and an investable strategy:
+Turning that opportunity into an investable strategy takes two things most storage models get wrong:
 
-1. **Forecasting the distribution, not the average.** The hours that pay are exactly the hours a point forecast misses. What's needed is a calibrated *range* of outcomes — especially an honest upper tail.
-2. **Trust.** Storage backtests routinely overstate revenue by letting the model "know" the future (leakage) or by optimizing and settling on the same forecast. And an autonomous agent allocating real capital raises the questions every risk committee, ISO, and — increasingly — AI regulator now asks: *who approved this decision, from what inputs, under which model version, and how do we roll it back?*
+1. **Forecast the distribution, not the average.** The hours that pay are exactly the ones a point forecast misses. What's needed is a calibrated *range* of outcomes — especially an honest upper tail — feeding a dispatch decision that co-optimizes energy and ancillary reserves under the battery's physical limits.
+2. **Measure revenue honestly.** Storage backtests routinely overstate returns by letting the model "know" the future (leakage) or by optimizing and settling on the same forecast. This project decides on forecasts and settles at the prices that actually occurred — the discipline that separates an investable 86% from a fictitious ~100%.
 
 This repository solves both, end to end, and makes the solution inspectable.
 
 ## What this project achieved — the numbers
 
-**Headline: the governed agent captured 86.1% of the theoretically available value — $3.31M in settled revenue over 57 out-of-sample days — while every schedule was committed the morning before, on forecasts alone.**
+**Headline: the system captured 86.1% of the theoretically available value — $3.31M in settled revenue over 57 out-of-sample days — while every schedule was committed the morning before, on forecasts alone.**
 
 ![Cumulative revenue: governed vs ceiling vs floor](reports/figures/fig07_cumulative_revenue.png)
 
 | Result | Number | Where it's proven |
 |---|---|---|
-| Settled revenue, governed agent (57 days, 100 MW / 200 MWh) | **$3.31M** | fig07, notebook 05 |
+| Settled revenue (57 days, 100 MW / 200 MWh) | **$3.31M** | fig07, notebook 05 |
 | Revenue capture vs perfect-foresight ceiling ($3.85M) | **86.1%** | fig08 |
 | Uplift vs naive average-day strategy ($0.61M) | **+447%** | fig07 |
 | Ancillary services' share of gross revenue (RTC+B stacking) | **96%** | fig09 |
@@ -42,20 +48,8 @@ This repository solves both, end to end, and makes the solution inspectable.
 
 - **Honest beats optimistic.** Dispatching on forecasts and settling at realized prices is the mechanism that separates an investable 86% from the fictitious ~100% that leaky studies report. The 14% gap to perfection is measured, attributed to forecast error, and concentrated in five spike days (fig10) — a roadmap for the next modeling dollar.
 - **Co-optimization is the product, not a refinement.** An energy-only battery model would have left ~96% of this asset's gross revenue on the table. Reserve stacking under real clearing prices carried the quiet days; energy discharge took the spikes (fig22).
-- **Simplicity won on evidence.** A deep-learning challenger (LSTM) was built behind the identical interface, calibrated identically, and lost on every metric (fig14). The governed choice is the explainable model — decided by measurement, not fashion.
-- **Governance caught something real.** During the build, the drift monitor fired on the arrival of the Texas summer regime (PSI 4.75). The resolution is on display: an owner-signed, expiring acknowledgment tied to a named risk — the detect → decide → document loop working, not a threshold quietly retuned.
-
-## Why this matters — and why now
-
-![Architecture: governance wired in, not bolted on](reports/figures/fig13_architecture.png)
-
-Three timelines converged to make this the right project at this moment:
-
-1. **ERCOT's RTC+B went live (December 2025).** Real-Time Co-optimization + Batteries makes co-optimized energy-plus-ancillary bidding *the* way storage value is captured in the largest battery market on earth. Every optimizer, asset owner, and grid-analytics vendor now needs exactly the decision loop modeled here: distributional price forecasts feeding a co-optimized dispatch under physical constraints.
-2. **Storage is now system-critical.** ERCOT's battery fleet has grown past 10 GW and shapes evening scarcity pricing. The question investors ask has shifted from "can a battery make money?" to "**can I trust this revenue model?**" — and trust is a governance property, not a modeling property.
-3. **AI-agent oversight became a legal requirement, not a slide.** The EU AI Act's obligations are phasing in through 2025–2027, and NIST AI RMF has become the de-facto U.S. reference. Both demand what most autonomous-agent demos lack: record-keeping, human oversight, monitoring, and rollback. This repository is a working reference implementation of those requirements applied to a real-money agent — every control is code with a test, enforced by a CI gate that exits non-zero.
-
-**Who this is for:** battery/storage operators and optimizers evaluating RTC+B strategies; grid-modeling and energy-analytics teams looking for an honest backtesting pattern; and AI-governance practitioners who need a concrete, executable example of NIST AI RMF / EU AI Act alignment on an autonomous decision system.
+- **Simplicity won on evidence.** A deep-learning challenger (LSTM) was built behind the identical interface, calibrated identically, and lost on every metric (fig14). The chosen model is the explainable one — decided by measurement, not fashion.
+- **The result is trustworthy by construction.** Because the agent allocates real capital, the numbers are backed by controls that run as code: an audit trail of every decision, a drift monitor that fired for real on the arrival of the Texas summer regime (PSI 4.75, resolved with an owner-signed, expiring acknowledgment), and release gates that block a merge on any failure — including one that rejects a backtest whose capture approaches 100% as suspected leakage. Governance here isn't the product; it's what makes the 86% believable.
 
 ## How to use it
 
@@ -85,7 +79,7 @@ python -m forecast_to_dispatch.governance.check --sample
 | `05_backtest_revenue` | The money story: 86.1% capture, decomposed and stress-read |
 | `06_governance_walkthrough` | Live demos: audit-chain tampering caught, HITL enforcement, rollback |
 
-**Serve it** (governance enforced over HTTP — deployment without human approval returns 403):
+**Serve it over HTTP** — `/forecast` returns the quantile forecast and `/dispatch` returns a schedule (deploying it requires a named approval, so `deploy: true` returns 403 until `/approve` is called):
 
 ```bash
 uvicorn forecast_to_dispatch.serve.api:app --port 8000
@@ -102,7 +96,19 @@ python scripts/run_pipeline.py --stages features forecast dispatch backtest gove
 
 Deep-dive documents: **[reports/RESULTS.md](reports/RESULTS.md)** (all 24 figures with business interpretations), **[reports/EXPLAINER.md](reports/EXPLAINER.md)** (the non-coder walkthrough), **[governance/model_card.md](governance/model_card.md)** (the model's generated passport), **[governance/risk_register.md](governance/risk_register.md)** (10 risks with owners and mitigations).
 
+## Why this matters — and why now
+
+Three timelines converged to make this the right project at this moment:
+
+1. **ERCOT's RTC+B went live (December 2025).** Real-Time Co-optimization + Batteries makes co-optimized energy-plus-ancillary bidding *the* way storage value is captured in one of the world's largest and fastest-growing battery markets. Every optimizer, asset owner, and grid-analytics vendor now needs exactly the decision loop modeled here: distributional price forecasts feeding a co-optimized dispatch under physical constraints.
+2. **Storage is now system-critical.** ERCOT's battery fleet has grown past 10 GW and shapes evening scarcity pricing. The question investors ask has shifted from "can a battery make money?" to "**can I trust this revenue model?**" — and this project answers it by measuring value the way a settlement desk would, not the way a leaky backtest does.
+3. **Real-money agents have to be deployable, not just accurate.** As AI moves from recommending decisions to committing them, risk committees and regulators (EU AI Act, NIST AI RMF) expect the basics — record-keeping, human oversight, monitoring, rollback. This project ships them as working code, which is the difference between a backtest and something you can actually run in production.
+
+**Who this is for:** battery/storage operators and optimizers evaluating RTC+B strategies; grid-modeling and energy-analytics teams looking for an honest backtesting pattern; and AI-governance practitioners who want a concrete, executable example of NIST AI RMF / EU AI Act alignment on an autonomous decision system.
+
 ## Architecture and honesty rules (below the fold)
+
+![Architecture: governance wired in, not bolted on](reports/figures/fig13_architecture.png)
 
 ```
 data/ingest        ERCOT DAM + RTM settlement point prices, 5 AS clearing prices,
@@ -129,4 +135,4 @@ Non-negotiables enforced in code: every feature knowable at bid time (tested by 
 
 ---
 
-*Built for ERCOT's RTC+B era: distributional forecasting feeding co-optimized energy + ancillary dispatch. Governance aligned to NIST AI RMF (Govern/Measure/Manage) and EU AI Act expectations for record-keeping, human oversight, and post-market monitoring — implemented as executable, CI-enforced controls.*
+*Built for ERCOT's RTC+B era: distributional price forecasting feeding co-optimized energy + ancillary dispatch, backtested honestly on real market data. Monitoring, audit, and human-in-the-loop oversight are wired through the loop — so the 86% is a number you can act on.*
