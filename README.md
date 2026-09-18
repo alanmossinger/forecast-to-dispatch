@@ -106,7 +106,7 @@ Three timelines converged to make this the right project at this moment:
 
 **Who this is for:** battery/storage operators and optimizers evaluating RTC+B strategies; grid-modeling and energy-analytics teams looking for an honest backtesting pattern; and AI-governance practitioners who want a concrete, executable example of NIST AI RMF / EU AI Act alignment on an autonomous decision system.
 
-## Architecture and honesty rules (below the fold)
+## Architecture rules (below the fold)
 
 ![Architecture: governance wired in, not bolted on](reports/figures/fig13_architecture.png)
 
