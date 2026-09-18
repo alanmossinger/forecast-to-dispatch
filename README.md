@@ -18,8 +18,8 @@ Grid-scale batteries have become system-critical assets in ERCOT, but their reve
 
 Turning that opportunity into an investable strategy takes two things most storage models get wrong:
 
-1. **Forecast the distribution, not the average.** The hours that pay are exactly the ones a point forecast misses. What's needed is a calibrated *range* of outcomes — especially an honest upper tail — feeding a dispatch decision that co-optimizes energy and ancillary reserves under the battery's physical limits.
-2. **Measure revenue honestly.** Storage backtests routinely overstate returns by letting the model "know" the future (leakage) or by optimizing and settling on the same forecast. This project decides on forecasts and settles at the prices that actually occurred — the discipline that separates an investable 86% from a fictitious ~100%.
+1. **Forecast the distribution, not the average.** The hours that pay are exactly the ones a point forecast misses. What's needed is a calibrated *range* of outcomes — especially in the upper tail — feeding a dispatch decision that co-optimizes energy and ancillary reserves under the battery's physical limits.
+2. **Measure revenue.** Storage backtests routinely overstate returns by letting the model "know" the future (leakage) or by optimizing and settling on the same forecast. This project decides on forecasts and settles at the prices that actually occurred — the discipline that separates an investable 86% from a fictitious ~100%.
 
 This repository solves both, end to end, and makes the solution inspectable.
 
@@ -36,7 +36,7 @@ This repository solves both, end to end, and makes the solution inspectable.
 | Uplift vs naive average-day strategy ($0.61M) | **+447%** | fig07 |
 | Ancillary services' share of gross revenue (RTC+B stacking) | **96%** | fig09 |
 | Forecast improvement vs climatology (pinball loss) | **13% better** (7.55 vs 8.67) | fig14 |
-| 90% interval honesty (after conformal calibration; raw model was 68%) | **86% empirical coverage** | fig02 |
+| 90% interval (after conformal calibration; raw model was 68%) | **86% empirical coverage** | fig02 |
 | Scarcity hours flagged in advance by the P95 | **35%** of 17 events, incl. the $3,049 spike | fig05 |
 | Regime drift caught by the monitor (summer arrival, net-load PSI) | **4.75** vs 0.2 threshold | fig11 |
 | Release gates enforced in CI (any failure blocks the merge) | **9/9 passing** | fig12 |
@@ -46,7 +46,7 @@ This repository solves both, end to end, and makes the solution inspectable.
 
 **And what it *proved*, beyond the numbers:**
 
-- **Honest beats optimistic.** Dispatching on forecasts and settling at realized prices is the mechanism that separates an investable 86% from the fictitious ~100% that leaky studies report. The 14% gap to perfection is measured, attributed to forecast error, and concentrated in five spike days (fig10) — a roadmap for the next modeling dollar.
+- **It beats regular practice.** Dispatching on forecasts and settling at realized prices is the mechanism that separates an investable 86% from the fictitious ~100% that leaky studies report. The 14% gap to perfection is measured, attributed to forecast error, and concentrated in five spike days (fig10) — a roadmap for the next modeling dollar.
 - **Co-optimization is the product, not a refinement.** An energy-only battery model would have left ~96% of this asset's gross revenue on the table. Reserve stacking under real clearing prices carried the quiet days; energy discharge took the spikes (fig22).
 - **Simplicity won on evidence.** A deep-learning challenger (LSTM) was built behind the identical interface, calibrated identically, and lost on every metric (fig14). The chosen model is the explainable one — decided by measurement, not fashion.
 - **The result is trustworthy by construction.** Because the agent allocates real capital, the numbers are backed by controls that run as code: an audit trail of every decision, a drift monitor that fired for real on the arrival of the Texas summer regime (PSI 4.75, resolved with an owner-signed, expiring acknowledgment), and release gates that block a merge on any failure — including one that rejects a backtest whose capture approaches 100% as suspected leakage. Governance here isn't the product; it's what makes the 86% believable.
