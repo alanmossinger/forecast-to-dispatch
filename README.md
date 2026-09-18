@@ -1,6 +1,6 @@
 # Forecast-to-Dispatch
 
-**A machine-learning system that forecasts wholesale power prices and dispatches a grid-scale battery to capture 86% of the theoretically available revenue — on real ERCOT data, measured honestly.**
+**A machine-learning system that forecasts wholesale power prices and dispatches a grid-scale battery to capture 86% of the theoretically available revenue — on real ERCOT data, measured.**
 
 Real ERCOT market data. Real trained models. Every dollar settled at the prices that actually happened — never at the forecast that made them look good.
 
