@@ -1,12 +1,14 @@
 # Forecast-to-Dispatch
 
+[![CI](https://github.com/alanmossinger/forecast-to-dispatch/actions/workflows/ci.yml/badge.svg)](https://github.com/alanmossinger/forecast-to-dispatch/actions/workflows/ci.yml)
+
 **A machine-learning system that forecasts wholesale power prices and dispatches a grid-scale battery to capture 86% of the theoretically available revenue — on real ERCOT data, measured.**
 
-Real ERCOT market data. Real trained models. Every dollar settled at the prices that actually happened — never at the forecast that made them look good.
+Trained on real ERCOT market data and backtested out of sample: every dollar is settled at the prices that actually occurred, not at the forecast. This is a backtest, not live trading.
 
 ## About the author
 
-I'm **Alan Mössinger** — an AI and energy executive with 20+ years at Petrobras. I build AI the way capital actually gets allocated in energy: under deep uncertainty, with asymmetric downside, and accountable to auditors. This project is that approach in working code — a real-money decision agent that forecasts, dispatches, and reports revenue you can act on. It's the reference implementation behind my thesis that AI is a capital-allocation and risk-management discipline.
+I'm **Alan Mössinger** — an AI and energy leader with 20+ years at Petrobras. I build AI the way capital actually gets allocated in energy: under deep uncertainty, with asymmetric downside, and accountable to auditors. This project is that approach in working code — a decision system that forecasts, dispatches, and reports revenue you can act on. It's the reference implementation behind my thesis that AI is a capital-allocation and risk-management discipline.
 
 **Connect:** [LinkedIn](https://www.linkedin.com/in/alan-m%C3%B6ssinger/) · [VEX AI-Tech](https://vexaitech.com/)
 
@@ -46,7 +48,7 @@ This repository solves both, end to end, and makes the solution inspectable.
 
 **And what it *proved*, beyond the numbers:**
 
-- **It beats regular practice.** Dispatching on forecasts and settling at realized prices is the mechanism that separates an investable 86% from the fictitious ~100% that leaky studies report. The 14% gap to perfection is measured, attributed to forecast error, and concentrated in five spike days (fig10) — a roadmap for the next modeling dollar.
+- **It beats regular practice.** Dispatching on forecasts and settling at realized prices is the mechanism that separates an investable 86% from the ~100% that leakage-prone studies report. The 14% gap to perfection is measured, attributed to forecast error, and concentrated in five spike days (fig10) — a roadmap for the next modeling dollar.
 - **Co-optimization is the product, not a refinement.** An energy-only battery model would have left ~96% of this asset's gross revenue on the table. Reserve stacking under real clearing prices carried the quiet days; energy discharge took the spikes (fig22).
 - **Simplicity won on evidence.** A deep-learning challenger (LSTM) was built behind the identical interface, calibrated identically, and lost on every metric (fig14). The chosen model is the explainable one — decided by measurement, not fashion.
 - **The result is trustworthy by construction.** Because the agent allocates real capital, the numbers are backed by controls that run as code: an audit trail of every decision, a drift monitor that fired for real on the arrival of the Texas summer regime (PSI 4.75, resolved with an owner-signed, expiring acknowledgment), and release gates that block a merge on any failure — including one that rejects a backtest whose capture approaches 100% as suspected leakage. Governance here isn't the product; it's what makes the 86% believable.
@@ -74,7 +76,7 @@ python -m forecast_to_dispatch.governance.check --sample
 |---|---|
 | `01_market_eda` | Where battery revenue actually lives (tails, evening window, episodic scarcity) |
 | `02_features_leakage` | What the model may know at bid time — and the proof it can't cheat |
-| `03_forecasting_lgbm_vs_lstm` | Calibrated quantile forecasts; the LSTM losing honestly; SHAP in market language |
+| `03_forecasting_lgbm_vs_lstm` | Calibrated quantile forecasts; the LSTM losing to the simpler model; SHAP in market language |
 | `04_dispatch_optimization` | The co-optimized schedule; physics as hard constraints; LP-vs-MILP |
 | `05_backtest_revenue` | The money story: 86.1% capture, decomposed and stress-read |
 | `06_governance_walkthrough` | Live demos: audit-chain tampering caught, HITL enforcement, rollback |
@@ -104,7 +106,7 @@ Three timelines converged to make this the right project at this moment:
 2. **Storage is now system-critical.** ERCOT's battery fleet has grown past 10 GW and shapes evening scarcity pricing. The question investors ask has shifted from "can a battery make money?" to "**can I trust this revenue model?**" — and this project answers it by measuring value the way a settlement desk would, not the way a leaky backtest does.
 3. **Real-money agents have to be deployable, not just accurate.** As AI moves from recommending decisions to committing them, risk committees and regulators (EU AI Act, NIST AI RMF) expect the basics — record-keeping, human oversight, monitoring, rollback. This project ships them as working code, which is the difference between a backtest and something you can actually run in production.
 
-**Who this is for:** battery/storage operators and optimizers evaluating RTC+B strategies; grid-modeling and energy-analytics teams looking for an honest backtesting pattern; and AI-governance practitioners who want a concrete, executable example of NIST AI RMF / EU AI Act alignment on an autonomous decision system.
+**Who this is for:** battery/storage operators and optimizers evaluating RTC+B strategies; grid-modeling and energy-analytics teams looking for a leakage-free backtesting pattern; and AI-governance practitioners who want a concrete, executable example of NIST AI RMF / EU AI Act alignment on an autonomous decision system.
 
 ## Architecture rules (below the fold)
 
@@ -135,4 +137,4 @@ Non-negotiables enforced in code: every feature knowable at bid time (tested by 
 
 ---
 
-*Built for ERCOT's RTC+B era: distributional price forecasting feeding co-optimized energy + ancillary dispatch, backtested honestly on real market data. Monitoring, audit, and human-in-the-loop oversight are wired through the loop — so the 86% is a number you can act on.*
+*Built for ERCOT's RTC+B era: distributional price forecasting feeding co-optimized energy + ancillary dispatch, backtested out of sample on real market data. Monitoring, audit, and human-in-the-loop oversight are wired through the loop — so the 86% is a number you can act on.*
